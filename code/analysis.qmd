@@ -1,0 +1,58 @@
+---
+title: "Report Preparation"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+```
+
+# Data
+
+## Loading
+
+First of all, load the raw data. There are 95839 samples and 20 features (including the response variable) here.
+
+```{r}
+df <- read.csv("../Data/patient.csv")
+dim(df)
+head(df)
+```
+
+## Cleaning
+
+Aiming to solve the binary classification problem, binary `y` should be elicited first. As for features, not all of them are available. For example, `pneumonia = 99` indicate the feature `pneumonia` is not available for this sample. In this case, we should label `99` as `NA` to avoid future mistakes.
+
+```{r}
+df <- df %>% mutate(y = ifelse(death_date == "9999-99-99", 0, 1),
+              across(c(sex, patient_type, intubated, pneumonia, pregnant, 
+                       diabetes, copd, asthma, immunosuppression, hypertension,
+                       other_diseases, cardiovascular, obesity, chronic_kidney_failure,
+                       smoker, another_case, icu, outcome), ~ factor(ifelse(.>2, NA, .)))) %>%
+  select(-death_date)
+head(df)
+
+```
+
+# Model
+
+In this part, we managed to reproduce the result in the papar \![Classification of Covid-19 Dataset with Some Machine Learning Methods\](<https://dergipark.org.tr/en/pub/jauist/issue/55760/748667>). machine learning classifier methods are considered:
+
+-   BayesNet
+
+-   NaiveBayes
+
+-   SMO (SVM)
+
+-   Random Forest
+
+-   J48 (Tree)
+
+-   IBK (KNN)
+
+## BayesNet
+
+```{r}
+
+```
