@@ -25,8 +25,14 @@ head(df)
 Aiming to solve the binary classification problem, binary `y` should be elicited first. As for features, not all of them are available. For example, `pneumonia = 99` indicate the feature `pneumonia` is not available for this sample. In this case, we should label `99` as `NA` to avoid future mistakes.
 
 ```{r}
-df <- df %>% mutate(y = factor(ifelse(death_date == "9999-99-99", 0, 1)),
+df_agefac <- df %>% mutate(y = factor(ifelse(death_date == "9999-99-99", 0, 1)),
                     age = factor(age),
+              across(c(sex, patient_type, intubated, pneumonia, pregnant, 
+                       diabetes, copd, asthma, immunosuppression, hypertension,
+                       other_diseases, cardiovascular, obesity, chronic_kidney_failure,
+                       smoker, another_case, icu, outcome), ~ factor(ifelse(.>2, NA, .)))) %>%
+  select(-c(death_date))
+df_ageori <- df %>% mutate(y = factor(ifelse(death_date == "9999-99-99", 0, 1)),
               across(c(sex, patient_type, intubated, pneumonia, pregnant, 
                        diabetes, copd, asthma, immunosuppression, hypertension,
                        other_diseases, cardiovascular, obesity, chronic_kidney_failure,
@@ -59,6 +65,7 @@ library(caret)
 ```
 
 ```{r}
+df <- df_agefac
 nb <- nb('y', df)
 nb <- lp(nb, df, smooth = 0.01)
 ```
@@ -78,6 +85,84 @@ prop.table(table(p, df$y))
 ```{r}
 confusionMatrix(p, df$y)
 ```
+
+## NaiveBayes
+
+```{r}
+library(naivebayes)
+```
+
+```{r}
+df <- df_ageori
+model <- naive_bayes(y ~ ., data = df, usekernel = T)
+```
+
+```{r}
+p <- predict(model, df, type = 'prob')
+```
+
+## SVM
+
+```{r}
+library(kernlab)
+```
+
+```{r}
+model <- ksvm(y ~ ., data = df, type = "C-svc")
+
+# 查看模型细节
+print(model)
+
+# 预测
+predictions <- predict(model, df)
+
+# 查看预测结果
+table(predictions, na.omit(df)$y)
+```
+
+
+
+## Random Forest
+
+```{r}
+library(randomForest)
+```
+
+
+```{r}
+df <- df_ageori
+model_rf <- randomForest(y ~ ., data=df, importance=TRUE, na.action=na.omit)
+```
+
+
+```{r}
+model_rf
+```
+
+
+## Decision Tree (C4.5)
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+## IBK (KNN)
+
+
+
+
+
+
 
 
 
