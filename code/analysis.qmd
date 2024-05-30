@@ -25,14 +25,14 @@ head(df)
 Aiming to solve the binary classification problem, binary `y` should be elicited first. As for features, not all of them are available. For example, `pneumonia = 99` indicate the feature `pneumonia` is not available for this sample. In this case, we should label `99` as `NA` to avoid future mistakes.
 
 ```{r}
-df <- df %>% mutate(y = ifelse(death_date == "9999-99-99", 0, 1),
+df <- df %>% mutate(y = factor(ifelse(death_date == "9999-99-99", 0, 1)),
+                    age = factor(age),
               across(c(sex, patient_type, intubated, pneumonia, pregnant, 
                        diabetes, copd, asthma, immunosuppression, hypertension,
                        other_diseases, cardiovascular, obesity, chronic_kidney_failure,
                        smoker, another_case, icu, outcome), ~ factor(ifelse(.>2, NA, .)))) %>%
-  select(-death_date)
+  select(-c(death_date))
 head(df)
-
 ```
 
 # Model
@@ -54,5 +54,40 @@ In this part, we managed to reproduce the result in the papar \![Classification 
 ## BayesNet
 
 ```{r}
-
+library(bnclassify)
+library(caret)
 ```
+
+```{r}
+nb <- nb('y', df)
+nb <- lp(nb, df, smooth = 0.01)
+```
+
+
+
+```{r}
+res <- cv(nb, df, k = 10, mean = FALSE)
+p <- predict(nb, df)
+```
+
+
+```{r}
+prop.table(table(p, df$y))
+```
+
+```{r}
+confusionMatrix(p, df$y)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
