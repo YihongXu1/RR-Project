@@ -2,10 +2,26 @@
 title: "Report Preparation"
 format: html
 editor: visual
+execute:
+  warning: false
 ---
 
+# Preparation
+
+Load all related packages, and define hyper-parameters from the very beginning. To ensure reproductivity, all seed are set to the fixed value `seed`.
+
 ```{r}
-library(tidyverse)
+library(tidyverse) # data cleaning
+library(caret) # confusion matrics
+library(bnclassify) # BN
+library(kernlab) # SVM
+library(randomForest) # random forest
+```
+
+```{r}
+# set hyperparameters
+path_csv <- "../Data/patient.csv"
+seed <- 9
 ```
 
 # Data
@@ -15,7 +31,7 @@ library(tidyverse)
 First of all, load the raw data. There are 95839 samples and 20 features (including the response variable) here.
 
 ```{r}
-df <- read.csv("../Data/patient.csv")
+df <- read.csv(path_csv)
 dim(df)
 head(df)
 ```
@@ -25,14 +41,16 @@ head(df)
 Aiming to solve the binary classification problem, binary `y` should be elicited first. As for features, not all of them are available. For example, `pneumonia = 99` indicate the feature `pneumonia` is not available for this sample. In this case, we should label `99` as `NA` to avoid future mistakes.
 
 ```{r}
-df_agefac <- df %>% mutate(y = factor(ifelse(death_date == "9999-99-99", 0, 1)),
+df_agefac <- df %>% mutate(y = factor(ifelse(death_date == "9999-99-99", 0, 1),
+                                      labels = c("live", "die")),
                     age = factor(age),
               across(c(sex, patient_type, intubated, pneumonia, pregnant, 
                        diabetes, copd, asthma, immunosuppression, hypertension,
                        other_diseases, cardiovascular, obesity, chronic_kidney_failure,
                        smoker, another_case, icu, outcome), ~ factor(ifelse(.>2, NA, .)))) %>%
   select(-c(death_date))
-df_ageori <- df %>% mutate(y = factor(ifelse(death_date == "9999-99-99", 0, 1)),
+df_ageori <- df %>% mutate(y = factor(ifelse(death_date == "9999-99-99", 0, 1),
+                                      labels = c("live", "die")),
               across(c(sex, patient_type, intubated, pneumonia, pregnant, 
                        diabetes, copd, asthma, immunosuppression, hypertension,
                        other_diseases, cardiovascular, obesity, chronic_kidney_failure,
@@ -43,69 +61,62 @@ head(df)
 
 # Model
 
-In this part, we managed to reproduce the result in the papar \![Classification of Covid-19 Dataset with Some Machine Learning Methods\](<https://dergipark.org.tr/en/pub/jauist/issue/55760/748667>). machine learning classifier methods are considered:
-
--   BayesNet
+In this part, we managed to reproduce the result in the papar [Classification of Covid-19 Dataset with Some Machine Learning Methods](https://dergipark.org.tr/en/pub/jauist/issue/55760/748667). machine learning classifier methods are considered:
 
 -   NaiveBayes
+
+-   BayesNet
 
 -   SMO (SVM)
 
 -   Random Forest
 
--   J48 (Tree)
+-   Decision Tree (C4.5)
 
--   IBK (KNN)
-
-## BayesNet
-
-```{r}
-library(bnclassify)
-library(caret)
-```
-
-```{r}
-df <- df_agefac
-nb <- nb('y', df)
-nb <- lp(nb, df, smooth = 0.01)
-```
-
-
-
-```{r}
-res <- cv(nb, df, k = 10, mean = FALSE)
-p <- predict(nb, df)
-```
-
-
-```{r}
-prop.table(table(p, df$y))
-```
-
-```{r}
-confusionMatrix(p, df$y)
-```
+-   KNN
 
 ## NaiveBayes
 
-```{r}
-library(naivebayes)
+```{r, eval = FALSE}
+df <- df_agefac
+set.seed(seed)
+model_nb <- nb('y', df)
+model_nb <- lp(model_nb, df, smooth = 1)
+cv(model_nb, df, k = 10)
+pred <- predict(model_nb, df)
+confusionMatrix(pred, df$y)
 ```
 
-```{r}
-df <- df_ageori
-model <- naive_bayes(y ~ ., data = df, usekernel = T)
+```{r, echo = FALSE, eval = FALSE}
+save.image(file = "midresult_bn.RData")
 ```
 
-```{r}
-p <- predict(model, df, type = 'prob')
+```{r, echo = FALSE}
+load(file = "midresult_bn.RData")
+confusionMatrix(pred, df$y)
 ```
 
+
+## BayesNet
+
+```{r, eval = FALSE}
+set.seed(seed)
+model_bn <- tan_cl('y', df, score = 'aic')
+model_bn <- lp(model_bn, df, smooth = 1)
+cv(model_bn, df, k = 10)
+pred <- predict(model_bn, df)
+confusionMatrix(pred, df$y)
+```
+
+```{r, echo = FALSE, eval = FALSE}
+save.image(file = "midresult_bn2.RData")
+```
+
+```{r, echo = FALSE}
+load(file = "midresult_bn2.RData")
+confusionMatrix(pred, df$y)
+```
 ## SVM
-
-```{r}
-library(kernlab)
-```
 
 ```{r}
 model <- ksvm(y ~ ., data = df, type = "C-svc")
@@ -123,10 +134,6 @@ table(predictions, na.omit(df)$y)
 
 
 ## Random Forest
-
-```{r}
-library(randomForest)
-```
 
 
 ```{r}
