@@ -1,9 +1,25 @@
 ---
-title: "Report Preparation"
-format: html
+title: "Machine Learning Method Application to Covid-19 Dataset"
+author: ""
+date: today
+format:
+  html:
+    toc: true
+    toc-title: Contents
+    toc-depth: 2
+    toc-expand: 1
+    smooth-scroll: true
+    theme:
+      light: lumen
+      dark: superhero
+number-sections: true
+number-depth: 2
 editor: visual
 execute:
   warning: false
+  cache: true 
+keep-md: true
+title-block-banner: true
 ---
 
 # Preparation
@@ -12,10 +28,12 @@ Load all related packages, and define hyper-parameters from the very beginning. 
 
 ```{r}
 library(tidyverse) # data cleaning
+library(knitr) # display tables in good format
 library(caret) # confusion matrics
 library(bnclassify) # BN
 library(kernlab) # SVM
 library(randomForest) # random forest
+library(C50) # C5.0 decision tree
 ```
 
 ```{r}
@@ -33,7 +51,7 @@ First of all, load the raw data. There are 95839 samples and 20 features (includ
 ```{r}
 df <- read.csv(path_csv)
 dim(df)
-head(df)
+kable(head(df), format = "html")
 ```
 
 ## Cleaning
@@ -41,22 +59,16 @@ head(df)
 Aiming to solve the binary classification problem, binary `y` should be elicited first. As for features, not all of them are available. For example, `pneumonia = 99` indicate the feature `pneumonia` is not available for this sample. In this case, we should label `99` as `NA` to avoid future mistakes.
 
 ```{r}
-df_agefac <- df %>% mutate(y = factor(ifelse(death_date == "9999-99-99", 0, 1),
-                                      labels = c("live", "die")),
-                    age = factor(age),
-              across(c(sex, patient_type, intubated, pneumonia, pregnant, 
-                       diabetes, copd, asthma, immunosuppression, hypertension,
-                       other_diseases, cardiovascular, obesity, chronic_kidney_failure,
-                       smoker, another_case, icu, outcome), ~ factor(ifelse(.>2, NA, .)))) %>%
-  select(-c(death_date))
 df_ageori <- df %>% mutate(y = factor(ifelse(death_date == "9999-99-99", 0, 1),
                                       labels = c("live", "die")),
-              across(c(sex, patient_type, intubated, pneumonia, pregnant, 
+                           pregnant = factor(ifelse(pregnant == 1, 1, 2)),
+              across(c(sex, patient_type, intubated, pneumonia,
                        diabetes, copd, asthma, immunosuppression, hypertension,
                        other_diseases, cardiovascular, obesity, chronic_kidney_failure,
                        smoker, another_case, icu, outcome), ~ factor(ifelse(.>2, NA, .)))) %>%
   select(-c(death_date))
-head(df)
+df_agefac <- df_ageori %>% mutate(age = factor(age))
+kable(head(df_agefac), format = "html")
 ```
 
 # Model
@@ -88,11 +100,12 @@ confusionMatrix(pred, df$y)
 ```
 
 ```{r, echo = FALSE, eval = FALSE}
-save.image(file = "midresult_bn.RData")
+save.image(file = "model/model_nb.RData")
 ```
 
 ```{r, echo = FALSE}
-load(file = "midresult_bn.RData")
+load(file = "model/model_nb.RData")
+# pred <- predict(model_nb, df)
 confusionMatrix(pred, df$y)
 ```
 
@@ -109,64 +122,101 @@ confusionMatrix(pred, df$y)
 ```
 
 ```{r, echo = FALSE, eval = FALSE}
-save.image(file = "midresult_bn2.RData")
+save.image(file = "model/model_bn.RData")
 ```
 
 ```{r, echo = FALSE}
-load(file = "midresult_bn2.RData")
+load(file = "model/model_bn.RData")
+# pred <- predict(model_bn, df)
 confusionMatrix(pred, df$y)
 ```
 ## SVM
 
-```{r}
-model <- ksvm(y ~ ., data = df, type = "C-svc")
-
-# 查看模型细节
-print(model)
-
-# 预测
-predictions <- predict(model, df)
-
-# 查看预测结果
-table(predictions, na.omit(df)$y)
+```{r, eval = FALSE}
+df <- na.omit(df_ageori)
+set.seed(seed)
+train_control <- trainControl(method = "cv", number = 10)
+model_svm <- train(y ~ ., data = df, method = "svmRadial", trControl = train_control)
+pred <- predict(model_svm, df)
+confusionMatrix(pred, df$y)
 ```
 
 
+```{r, echo = FALSE, eval = FALSE}
+save.image(file = "model/model_svm.RData")
+```
+
+```{r, echo = FALSE}
+load(file = "model/model_svm.RData")
+# pred <- predict(model_bn, df)
+confusionMatrix(pred, df$y)
+```
 
 ## Random Forest
 
-
-```{r}
-df <- df_ageori
-model_rf <- randomForest(y ~ ., data=df, importance=TRUE, na.action=na.omit)
+```{r, eval = FALSE}
+set.seed(seed)
+df <- na.omit(df_ageori)
+train_control <- trainControl(method = "cv", number = 10)
+model_rf <- train(y ~ ., data = df, method = "rf", trControl = train_control)
+pred <- predict(model_rf, df)
+confusionMatrix(pred, df$y)
 ```
 
 
-```{r}
-model_rf
+```{r, echo = FALSE, eval = FALSE}
+save.image(file = "model/model_rf.RData")
 ```
 
+```{r, echo = FALSE}
+load(file = "model/model_rf.RData")
+# pred <- predict(model_bn, df)
+confusionMatrix(pred, df$y)
+```
 
 ## Decision Tree (C4.5)
 
-```{r}
-
+```{r, eval = FALSE}
+set.seed(seed)
+train_control <- trainControl(method = "cv", number = 10)
+model_tree <- train(y ~ ., data = df, method = "C5.0", trControl = train_control)
+pred <- predict(model_tree, df)
+confusionMatrix(pred, df$y)
 ```
 
 
+```{r, echo = FALSE, eval = FALSE}
+save.image(file = "model/model_tree.RData")
+```
 
-
-
-
-
-
-
-
+```{r, echo = FALSE}
+load(file = "model/model_tree.RData")
+confusionMatrix(pred, df$y)
+```
 
 ## IBK (KNN)
 
 
 
+```{r, eval = FALSE}
+set.seed(seed)
+train_control <- trainControl(method = "cv", number = 10)
+model_knn <- train(y ~ ., data = df, method = "knn", trControl = train_control)
+pred <- predict(model_knn, df)
+confusionMatrix(pred, df$y)
+```
+
+
+```{r, echo = FALSE, eval = FALSE}
+save.image(file = "model/model_knn.RData")
+```
+
+```{r, echo = FALSE}
+load(file = "model/model_knn.RData")
+confusionMatrix(pred, df$y)
+```
+
+# Summary
 
 
 
