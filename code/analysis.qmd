@@ -79,24 +79,26 @@ In this part, we managed to reproduce the result in the papar [Classification of
 
 -   BayesNet
 
--   SMO (SVM)
+-   SVM
 
 -   Random Forest
 
--   Decision Tree (C4.5)
+-   Decision Tree
 
 -   KNN
 
 ## NaiveBayes
 
+NaiveBayes assumes all variables are independent from each other. By experience, it works relatively well even if the assumptions are not met.
+
 ```{r, eval = FALSE}
-df <- df_agefac
+df <- df_agefac # use factorized age version 
 set.seed(seed)
 model_nb <- nb('y', df)
-model_nb <- lp(model_nb, df, smooth = 1)
-cv(model_nb, df, k = 10)
-pred <- predict(model_nb, df)
-confusionMatrix(pred, df$y)
+model_nb <- lp(model_nb, df, smooth = 1) # learn parameter
+cv(model_nb, df, k = 10) # cross validation
+pred_nb <- predict(model_nb, df)
+confusionMatrix(pred_nb, df$y)
 ```
 
 ```{r, echo = FALSE, eval = FALSE}
@@ -106,19 +108,20 @@ save.image(file = "model/model_nb.RData")
 ```{r, echo = FALSE}
 load(file = "model/model_nb.RData")
 # pred <- predict(model_nb, df)
-confusionMatrix(pred, df$y)
+confusionMatrix(pred_nb, df$y)
 ```
 
-
 ## BayesNet
+
+Different from Naive Bayes, Bayes net
 
 ```{r, eval = FALSE}
 set.seed(seed)
 model_bn <- tan_cl('y', df, score = 'aic')
 model_bn <- lp(model_bn, df, smooth = 1)
 cv(model_bn, df, k = 10)
-pred <- predict(model_bn, df)
-confusionMatrix(pred, df$y)
+pred_bn <- predict(model_bn, df)
+confusionMatrix(pred_bn, df$y)
 ```
 
 ```{r, echo = FALSE, eval = FALSE}
@@ -127,8 +130,7 @@ save.image(file = "model/model_bn.RData")
 
 ```{r, echo = FALSE}
 load(file = "model/model_bn.RData")
-# pred <- predict(model_bn, df)
-confusionMatrix(pred, df$y)
+confusionMatrix(pred_bn, df$y)
 ```
 ## SVM
 
@@ -137,8 +139,8 @@ df <- na.omit(df_ageori)
 set.seed(seed)
 train_control <- trainControl(method = "cv", number = 10)
 model_svm <- train(y ~ ., data = df, method = "svmRadial", trControl = train_control)
-pred <- predict(model_svm, df)
-confusionMatrix(pred, df$y)
+pred_svm <- predict(model_svm, df)
+confusionMatrix(pred_svm, df$y)
 ```
 
 
@@ -149,7 +151,7 @@ save.image(file = "model/model_svm.RData")
 ```{r, echo = FALSE}
 load(file = "model/model_svm.RData")
 # pred <- predict(model_bn, df)
-confusionMatrix(pred, df$y)
+confusionMatrix(pred_svm, df$y)
 ```
 
 ## Random Forest
@@ -159,8 +161,8 @@ set.seed(seed)
 df <- na.omit(df_ageori)
 train_control <- trainControl(method = "cv", number = 10)
 model_rf <- train(y ~ ., data = df, method = "rf", trControl = train_control)
-pred <- predict(model_rf, df)
-confusionMatrix(pred, df$y)
+pred_rf <- predict(model_rf, df)
+confusionMatrix(pred_rf, df$y)
 ```
 
 
@@ -170,8 +172,7 @@ save.image(file = "model/model_rf.RData")
 
 ```{r, echo = FALSE}
 load(file = "model/model_rf.RData")
-# pred <- predict(model_bn, df)
-confusionMatrix(pred, df$y)
+confusionMatrix(pred_rf, df$y)
 ```
 
 ## Decision Tree (C4.5)
@@ -180,8 +181,8 @@ confusionMatrix(pred, df$y)
 set.seed(seed)
 train_control <- trainControl(method = "cv", number = 10)
 model_tree <- train(y ~ ., data = df, method = "C5.0", trControl = train_control)
-pred <- predict(model_tree, df)
-confusionMatrix(pred, df$y)
+pred_tree <- predict(model_tree, df)
+confusionMatrix(pred_tree, df$y)
 ```
 
 
@@ -191,10 +192,10 @@ save.image(file = "model/model_tree.RData")
 
 ```{r, echo = FALSE}
 load(file = "model/model_tree.RData")
-confusionMatrix(pred, df$y)
+confusionMatrix(pred_tree, df$y)
 ```
 
-## IBK (KNN)
+## kNN
 
 
 
@@ -202,8 +203,8 @@ confusionMatrix(pred, df$y)
 set.seed(seed)
 train_control <- trainControl(method = "cv", number = 10)
 model_knn <- train(y ~ ., data = df, method = "knn", trControl = train_control)
-pred <- predict(model_knn, df)
-confusionMatrix(pred, df$y)
+pred_knn <- predict(model_knn, df)
+confusionMatrix(pred_knn, df$y)
 ```
 
 
@@ -213,10 +214,26 @@ save.image(file = "model/model_knn.RData")
 
 ```{r, echo = FALSE}
 load(file = "model/model_knn.RData")
-confusionMatrix(pred, df$y)
+confusionMatrix(pred_knn, df$y)
 ```
 
 # Summary
+
+In this part, we summarize all the results above to reproduce the main result table in the original paper
+
+accuracy
+precision
+F-measure
+recall
+
+
+```{r}
+acc <- accuracy(pred_knn, df$y)
+prec <- precision(pred_knn, df$y)
+rec <- recall(pred_knn, df$y)
+F1 <- 2*(prec*rec)/(prec+rec)
+```
+
 
 
 
