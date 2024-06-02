@@ -266,6 +266,7 @@ Results are not totally the same as shown in the paper. The paper states that SV
 
 - Subtypes of the methods are not totally the same. For example, SMO version of SVM is used in the paper. However, we could not do exactly the same, instead we apply radial basis kernel. There are some ambiguity is the paper which prevents us from reproducing as well. As we known, NaiveBayes and BayesNet adopt different assumptions, but the original paper refer to both method as NaiveBayes.
 
+
 In conclusion, we cannot reproduce every details of the original paper without specification. However, results of our own can be reproduced since random seed is fixed and every detail is displayed in the chunks above. To reproduce all results at once, run `reproduce.r`.
 
 
