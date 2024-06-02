@@ -28,9 +28,6 @@ title-block-banner: true
 
 Load all related packages, and define hyper-parameters from the very beginning. To ensure reproductivity, all seed are set to the fixed value `seed`.
 
-
-::: {.cell}
-
 ```{.r .cell-code}
 library(tidyverse) # data cleaning
 library(knitr) # display tables in good format
@@ -40,17 +37,11 @@ library(kernlab) # SVM
 library(randomForest) # random forest
 library(C50) # C5.0 decision tree
 ```
-:::
-
-::: {.cell}
-
 ```{.r .cell-code}
 # set hyperparameters
 path_csv <- "../Data/patient.csv"
 seed <- 9
 ```
-:::
-
 
 # Data
 
@@ -58,195 +49,18 @@ seed <- 9
 
 First of all, load the raw data. There are 95839 samples and 20 features (including the response variable) here.
 
-
-::: {.cell}
-
 ```{.r .cell-code}
 df <- read.csv(path_csv)
 dim(df)
 ```
 
-::: {.cell-output .cell-output-stdout}
-
 ```
 [1] 95839    20
 ```
 
-
-:::
-
 ```{.r .cell-code}
 kable(head(df), format = "html")
 ```
-
-::: {.cell-output-display}
-
-`````{=html}
-<table>
- <thead>
-  <tr>
-   <th style="text-align:right;"> sex </th>
-   <th style="text-align:right;"> patient_type </th>
-   <th style="text-align:right;"> intubated </th>
-   <th style="text-align:right;"> pneumonia </th>
-   <th style="text-align:right;"> age </th>
-   <th style="text-align:right;"> pregnant </th>
-   <th style="text-align:right;"> diabetes </th>
-   <th style="text-align:right;"> copd </th>
-   <th style="text-align:right;"> asthma </th>
-   <th style="text-align:right;"> immunosuppression </th>
-   <th style="text-align:right;"> hypertension </th>
-   <th style="text-align:right;"> other_diseases </th>
-   <th style="text-align:right;"> cardiovascular </th>
-   <th style="text-align:right;"> obesity </th>
-   <th style="text-align:right;"> chronic_kidney_failure </th>
-   <th style="text-align:right;"> smoker </th>
-   <th style="text-align:right;"> another_case </th>
-   <th style="text-align:right;"> outcome </th>
-   <th style="text-align:right;"> icu </th>
-   <th style="text-align:left;"> death_date </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 97 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 42 </td>
-   <td style="text-align:right;"> 97 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 99 </td>
-   <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 97 </td>
-   <td style="text-align:left;"> 9999-99-99 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 97 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 51 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 99 </td>
-   <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 97 </td>
-   <td style="text-align:left;"> 9999-99-99 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 51 </td>
-   <td style="text-align:right;"> 97 </td>
-   <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 99 </td>
-   <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:left;"> 9999-99-99 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 57 </td>
-   <td style="text-align:right;"> 97 </td>
-   <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 99 </td>
-   <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:left;"> 2020-04-01 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 44 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:left;"> 9999-99-99 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 40 </td>
-   <td style="text-align:right;"> 97 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 98 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 99 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:left;"> 9999-99-99 </td>
-  </tr>
-</tbody>
-</table>
-
-`````
-
-:::
-:::
 
 
 ## Cleaning
@@ -254,7 +68,6 @@ kable(head(df), format = "html")
 Aiming to solve the binary classification problem, binary `y` should be elicited first. As for features, not all of them are available. For example, `pneumonia = 99` indicate the feature `pneumonia` is not available for this sample. In this case, we should label `99` as `NA` to avoid future mistakes. Some machine learning methods cannot handle cases with NA value, we actually use sample without NA values. however, NA for feature `pregnant` is not really not available. All males are labelled `NA`, but it does not make sense to eliminate all males. In this case, `NA` for feature `pregnant` should be changed to `2` which indicate not pregnant. Besides, `age` is the only continuous variable in this dataset. NaiveBayes and BayesNet could only handle factor features, while others work with numeric features. We prepare two version of data frames, one with factor age column and the other with numeric age column.
 
 
-::: {.cell}
 
 ```{.r .cell-code}
 df_ageori <- df %>% mutate(y = factor(ifelse(death_date == "9999-99-99", 0, 1),
@@ -268,175 +81,6 @@ df_ageori <- df %>% mutate(y = factor(ifelse(death_date == "9999-99-99", 0, 1),
 df_agefac <- df_ageori %>% mutate(age = factor(age))
 kable(head(df_agefac), format = "html")
 ```
-
-::: {.cell-output-display}
-
-`````{=html}
-<table>
- <thead>
-  <tr>
-   <th style="text-align:left;"> sex </th>
-   <th style="text-align:left;"> patient_type </th>
-   <th style="text-align:left;"> intubated </th>
-   <th style="text-align:left;"> pneumonia </th>
-   <th style="text-align:left;"> age </th>
-   <th style="text-align:left;"> pregnant </th>
-   <th style="text-align:left;"> diabetes </th>
-   <th style="text-align:left;"> copd </th>
-   <th style="text-align:left;"> asthma </th>
-   <th style="text-align:left;"> immunosuppression </th>
-   <th style="text-align:left;"> hypertension </th>
-   <th style="text-align:left;"> other_diseases </th>
-   <th style="text-align:left;"> cardiovascular </th>
-   <th style="text-align:left;"> obesity </th>
-   <th style="text-align:left;"> chronic_kidney_failure </th>
-   <th style="text-align:left;"> smoker </th>
-   <th style="text-align:left;"> another_case </th>
-   <th style="text-align:left;"> outcome </th>
-   <th style="text-align:left;"> icu </th>
-   <th style="text-align:left;"> y </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 42 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> live </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 51 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> live </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 51 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> live </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 57 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> die </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 44 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> live </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:left;"> 40 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:left;"> live </td>
-  </tr>
-</tbody>
-</table>
-
-`````
-
-:::
-:::
 
 
 # Model
@@ -473,15 +117,6 @@ cv(model_nb, df, k = 10) # cross validation
 pred_nb <- predict(model_nb, df)
 confusionMatrix(pred_nb, df$y)
 ```
-:::
-
-::: {.cell}
-
-:::
-
-::: {.cell}
-::: {.cell-output .cell-output-stdout}
-
 ```
 Confusion Matrix and Statistics
 
@@ -513,16 +148,12 @@ Prediction live  die
 ```
 
 
-:::
-:::
+
 
 
 ## BayesNet
 
 Different from Naive Bayes, Bayes net define a complicated network structure which indicate relationships among a set of features. The assumption makes sense but is more time-consuming than NaiveBayes Model.
-
-
-::: {.cell}
 
 ```{.r .cell-code}
 set.seed(seed)
@@ -532,15 +163,6 @@ cv(model_bn, df, k = 10)
 pred_bn <- predict(model_bn, df)
 confusionMatrix(pred_bn, df$y)
 ```
-:::
-
-::: {.cell}
-
-:::
-
-::: {.cell}
-::: {.cell-output .cell-output-stdout}
-
 ```
 Confusion Matrix and Statistics
 
@@ -571,16 +193,9 @@ Prediction live  die
                                           
 ```
 
-
-:::
-:::
-
 ## SVM
 
 Support Vector Machine (SVM) aim to find the hyperplane with the largest margin to classify data points. Kernel trick is applied here to improve accuracy. We use  radial basis kernel. 
-
-
-::: {.cell}
 
 ```{.r .cell-code}
 df <- na.omit(df_ageori)
@@ -590,15 +205,6 @@ model_svm <- train(y ~ ., data = df, method = "svmRadial", trControl = train_con
 pred_svm <- predict(model_svm, df)
 confusionMatrix(pred_svm, df$y)
 ```
-:::
-
-::: {.cell}
-
-:::
-
-::: {.cell}
-::: {.cell-output .cell-output-stdout}
-
 ```
 Confusion Matrix and Statistics
 
@@ -630,10 +236,6 @@ Prediction live  die
 ```
 
 
-:::
-:::
-
-
 ## Random Forest
 
 Random Forest (RF) is consisted of a set of decision trees. Each tree is a weak classifier trained with only a subset of data and features. RF is actually a ensemble learning method.
@@ -649,15 +251,6 @@ model_rf <- train(y ~ ., data = df, method = "rf", trControl = train_control)
 pred_rf <- predict(model_rf, df)
 confusionMatrix(pred_rf, df$y)
 ```
-:::
-
-::: {.cell}
-
-:::
-
-::: {.cell}
-::: {.cell-output .cell-output-stdout}
-
 ```
 Confusion Matrix and Statistics
 
@@ -689,10 +282,6 @@ Prediction live  die
 ```
 
 
-:::
-:::
-
-
 ## Decision Tree (C4.5)
 
 Different decision tree algorithms have different feature selection methods, ID3 uses information gain, CART uses gini coefficient and C4.5 uses information gain rate. C5.0, which we use here, is a modified version of C4.5 to be more efficient and accurate.
@@ -707,15 +296,6 @@ model_tree <- train(y ~ ., data = df, method = "C5.0", trControl = train_control
 pred_tree <- predict(model_tree, df)
 confusionMatrix(pred_tree, df$y)
 ```
-:::
-
-::: {.cell}
-
-:::
-
-::: {.cell}
-::: {.cell-output .cell-output-stdout}
-
 ```
 Confusion Matrix and Statistics
 
@@ -747,10 +327,6 @@ Prediction live  die
 ```
 
 
-:::
-:::
-
-
 ## kNN
 
 kNN method find k neighbors near the datapoints first. Class of new points is determined by classes of its neighbors. kNN is non-linear.
@@ -765,15 +341,6 @@ model_knn <- train(y ~ ., data = df, method = "knn", trControl = train_control)
 pred_knn <- predict(model_knn, df)
 confusionMatrix(pred_knn, df$y)
 ```
-:::
-
-::: {.cell}
-
-:::
-
-::: {.cell}
-::: {.cell-output .cell-output-stdout}
-
 ```
 Confusion Matrix and Statistics
 
@@ -805,16 +372,9 @@ Prediction live  die
 ```
 
 
-:::
-:::
-
-
 # Summary
 
 In this part, we summarize all the results above to reproduce the main result table in the original paper. 
-
-
-::: {.cell}
 
 ```{.r .cell-code}
 # get all scores of a model in a function
@@ -826,14 +386,6 @@ get_all_scores <- function(pred, y = df$y){
   return(c(acc, prec, F1, rec))
 }
 ```
-:::
-
-::: {.cell}
-
-:::
-
-::: {.cell}
-
 ```{.r .cell-code}
 pred_list <- list(pred_nb, pred_bn, pred_svm, 
                   pred_rf, pred_tree, pred_knn)
@@ -844,71 +396,18 @@ summary_table <- cbind(data.frame(Model = c("NaiveBayes", "BayesNet", "SVM", "Ra
 kable(summary_table, format = "html")
 ```
 
-::: {.cell-output-display}
-
-`````{=html}
-<table>
- <thead>
-  <tr>
-   <th style="text-align:left;"> Model </th>
-   <th style="text-align:right;"> Accuracy </th>
-   <th style="text-align:right;"> Precision </th>
-   <th style="text-align:right;"> F1 </th>
-   <th style="text-align:right;"> Recall </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:left;"> NaiveBayes </td>
-   <td style="text-align:right;"> 0.867 </td>
-   <td style="text-align:right;"> 0.907 </td>
-   <td style="text-align:right;"> 0.925 </td>
-   <td style="text-align:right;"> 0.944 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> BayesNet </td>
-   <td style="text-align:right;"> 0.880 </td>
-   <td style="text-align:right;"> 0.900 </td>
-   <td style="text-align:right;"> 0.934 </td>
-   <td style="text-align:right;"> 0.971 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> SVM </td>
-   <td style="text-align:right;"> 0.870 </td>
-   <td style="text-align:right;"> 0.870 </td>
-   <td style="text-align:right;"> 0.930 </td>
-   <td style="text-align:right;"> 1.000 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> RandomForest </td>
-   <td style="text-align:right;"> 0.872 </td>
-   <td style="text-align:right;"> 0.872 </td>
-   <td style="text-align:right;"> 0.932 </td>
-   <td style="text-align:right;"> 1.000 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> DecisionTree </td>
-   <td style="text-align:right;"> 0.870 </td>
-   <td style="text-align:right;"> 0.870 </td>
-   <td style="text-align:right;"> 0.930 </td>
-   <td style="text-align:right;"> 1.000 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> kNN </td>
-   <td style="text-align:right;"> 0.876 </td>
-   <td style="text-align:right;"> 0.880 </td>
-   <td style="text-align:right;"> 0.933 </td>
-   <td style="text-align:right;"> 0.993 </td>
-  </tr>
-</tbody>
-</table>
-
-`````
-
-:::
-:::
-
-
+$$
+\begin{array}{|c|c|c|c|c|}
+\hline \text { Model } & \text { Accuracy } & \text { Precision } & \text { F1 } & \text { Recall } \\
+\hline \text { NaiveBayes } & 0.867 & 0.907 & 0.925 & 0.944 \\
+\hline \text { BayesNet } & 0.880 & 0.900 & 0.934 & 0.971 \\
+\hline \text { SVM } & 0.870 & 0.870 & 0.930 & 1.000 \\
+\hline \text { RandomForest } & 0.872 & 0.872 & 0.932 & 1.000 \\
+\hline \text { DecisionTree } & 0.870 & 0.870 & 0.930 & 1.000 \\
+\hline \mathrm{kNN} & 0.876 & 0.880 & 0.933 & 0.993 \\
+\hline
+\end{array}
+$$
 
 Results are not totally the same as shown in the paper. The paper states that SVM renders the best accuracy score, all scores are rather close to 1, while ours is not the same. kNN is the best accordin to accuracy score. recall of SVM, random forest and decision tree is 1 (the same as the paper), while accuracy and precision could not reach 1. Possible reasons of the difference are listed below:
 
