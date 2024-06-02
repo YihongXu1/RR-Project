@@ -225,14 +225,10 @@ confusionMatrix(pred_knn, df$y)
 
 # Summary
 
-In this part, we summarize all the results above to reproduce the main result table in the original paper
-
-accuracy
-precision
-F-measure
-recall
+In this part, we summarize all the results above to reproduce the main result table in the original paper. 
 
 ```{r}
+# get all scores of a model in a function
 get_all_scores <- function(pred, y = df$y){
   acc <- accuracy(pred, y)
   prec <- precision(pred, y)
@@ -258,6 +254,40 @@ colnames(summary_table) <- c("Accuracy", "Precision", "F1", "Recall")
 summary_table <- cbind(data.frame(Model = c("NaiveBayes", "BayesNet", "SVM", "RandomForest", "DecisionTree", "kNN")), summary_table)
 kable(summary_table, format = "html")
 ```
+
+
+Results are not totally the same as shown in the paper. The paper states that SVM renders the best accuracy score, all scores are rather close to 1, while ours is not the same. kNN is the best accordin to accuracy score. recall of SVM, random forest and decision tree is 1 (the same as the paper), while accuracy and precision could not reach 1. Possible reasons of the difference are listed below:
+
+- There are different data preprocessing methods. As some models cannot handle NA values, what to do with NA recording matters. Details of preprocessing is not available in the paper, so we may get different data to fit the model.
+
+- Seeds are also different. In our study, we fix the seed to ensure reproducibility. But the seed is not the same as the paper. In this cased, for each fold of the cross validation method, we got different subsets of data from the ones used in the paper.
+
+- Different program languages also matter. The paper used WEKA, while we use R. Underlying implementation varies.
+
+- Subtypes of the methods are not totally the same. For example, SMO version of SVM is used in the paper. However, we could not do exactly the same, instead we apply radial basis kernel. There are some ambiguity is the paper which prevents us from reproducing as well. As we known, NaiveBayes and BayesNet adopt different assumptions, but the original paper refer to both method as NaiveBayes.
+
+In conclusion, we cannot reproduce every details of the original paper without specification. However, results of our own can be reproduced since random seed is fixed and every detail is displayed in the chunks above. To reproduce all results at once, run `reproduce.r`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

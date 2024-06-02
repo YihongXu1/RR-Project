@@ -784,16 +784,16 @@ Prediction live  die
 </section>
 <section id="summary" class="level1" data-number="4">
 <h1 data-number="4"><span class="header-section-number">4</span> Summary</h1>
-<p>In this part, we summarize all the results above to reproduce the main result table in the original paper</p>
-<p>accuracy precision F-measure recall</p>
+<p>In this part, we summarize all the results above to reproduce the main result table in the original paper.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>get_all_scores <span class="ot">&lt;-</span> <span class="cf">function</span>(pred, <span class="at">y =</span> df<span class="sc">$</span>y){</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  acc <span class="ot">&lt;-</span> <span class="fu">accuracy</span>(pred, y)</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  prec <span class="ot">&lt;-</span> <span class="fu">precision</span>(pred, y)</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  rec <span class="ot">&lt;-</span> <span class="fu">recall</span>(pred, y)</span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  F1 <span class="ot">&lt;-</span> <span class="dv">2</span><span class="sc">*</span>(prec<span class="sc">*</span>rec)<span class="sc">/</span>(prec<span class="sc">+</span>rec)</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">c</span>(acc, prec, F1, rec))</span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get all scores of a model in a function</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>get_all_scores <span class="ot">&lt;-</span> <span class="cf">function</span>(pred, <span class="at">y =</span> df<span class="sc">$</span>y){</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  acc <span class="ot">&lt;-</span> <span class="fu">accuracy</span>(pred, y)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  prec <span class="ot">&lt;-</span> <span class="fu">precision</span>(pred, y)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  rec <span class="ot">&lt;-</span> <span class="fu">recall</span>(pred, y)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  F1 <span class="ot">&lt;-</span> <span class="dv">2</span><span class="sc">*</span>(prec<span class="sc">*</span>rec)<span class="sc">/</span>(prec<span class="sc">+</span>rec)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">c</span>(acc, prec, F1, rec))</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>pred_list <span class="ot">&lt;-</span> <span class="fu">list</span>(pred_nb, pred_bn, pred_svm, </span>
@@ -865,6 +865,14 @@ Prediction live  die
 </div>
 </div>
 </div>
+<p>Results are not totally the same as shown in the paper. The paper states that SVM renders the best accuracy score, all scores are rather close to 1, while ours is not the same. kNN is the best accordin to accuracy score. recall of SVM, random forest and decision tree is 1 (the same as the paper), while accuracy and precision could not reach 1. Possible reasons of the difference are listed below:</p>
+<ul>
+<li><p>There are different data preprocessing methods. As some models cannot handle NA values, what to do with NA recording matters. Details of preprocessing is not available in the paper, so we may get different data to fit the model.</p></li>
+<li><p>Seeds are also different. In our study, we fix the seed to ensure reproducibility. But the seed is not the same as the paper. In this cased, for each fold of the cross validation method, we got different subsets of data from the ones used in the paper.</p></li>
+<li><p>Different program languages also matter. The paper used WEKA, while we use R. Underlying implementation varies.</p></li>
+<li><p>Subtypes of the methods are not totally the same. For example, SMO version of SVM is used in the paper. However, we could not do exactly the same, instead we apply radial basis kernel. There are some ambiguity is the paper which prevents us from reproducing as well. As we known, NaiveBayes and BayesNet adopt different assumptions, but the original paper refer to both method as NaiveBayes.</p></li>
+</ul>
+<p>In conclusion, we cannot reproduce every details of the original paper without specification. However, results of our own can be reproduced since random seed is fixed and every detail is displayed in the chunks above. To reproduce all results at once, run <code>reproduce.r</code>.</p>
 </section>
 
 </main>
