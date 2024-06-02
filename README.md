@@ -84,6 +84,7 @@ The structure of this repo is listed as below:
   - renv: environment to reproduce the same result as the analysis
   - session_info.txt: all session info of the environment
 - Data/patients.csv: data downloaded from Kaggle.
+- ref：original paper file
 - .gitignore: files which should be ignored by git. You can reproduce all result without these files
 - LICENSE: copyright
 - README.md: the general introduction of this repo and analysis, which you're reading now.
