@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="">
-<meta name="dcterms.date" content="2024-06-01">
+<meta name="dcterms.date" content="2024-06-02">
 
 <title>Machine Learning Method Application to Covid-19 Dataset</title>
 <style>
@@ -92,7 +92,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">June 1, 2024</p>
+        <p class="date">June 2, 2024</p>
       </div>
     </div>
     
@@ -119,7 +119,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#svm" id="toc-svm" class="nav-link" data-scroll-target="#svm"><span class="header-section-number">3.3</span> SVM</a></li>
   <li><a href="#random-forest" id="toc-random-forest" class="nav-link" data-scroll-target="#random-forest"><span class="header-section-number">3.4</span> Random Forest</a></li>
   <li><a href="#decision-tree-c4.5" id="toc-decision-tree-c4.5" class="nav-link" data-scroll-target="#decision-tree-c4.5"><span class="header-section-number">3.5</span> Decision Tree (C4.5)</a></li>
-  <li><a href="#ibk-knn" id="toc-ibk-knn" class="nav-link" data-scroll-target="#ibk-knn"><span class="header-section-number">3.6</span> IBK (KNN)</a></li>
+  <li><a href="#knn" id="toc-knn" class="nav-link" data-scroll-target="#knn"><span class="header-section-number">3.6</span> kNN</a></li>
   </ul></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">4</span> Summary</a></li>
   </ul>
@@ -518,48 +518,49 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <ul>
 <li><p>NaiveBayes</p></li>
 <li><p>BayesNet</p></li>
-<li><p>SMO (SVM)</p></li>
+<li><p>SVM</p></li>
 <li><p>Random Forest</p></li>
-<li><p>Decision Tree (C4.5)</p></li>
+<li><p>Decision Tree</p></li>
 <li><p>KNN</p></li>
 </ul>
 <section id="naivebayes" class="level2" data-number="3.1">
 <h2 data-number="3.1" class="anchored" data-anchor-id="naivebayes"><span class="header-section-number">3.1</span> NaiveBayes</h2>
+<p>NaiveBayes assumes all variables are independent from each other. By experience, it works relatively well even if the assumptions are not met.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df_agefac</span>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(df_agefac) <span class="co"># use factorized age version </span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(seed)</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>model_nb <span class="ot">&lt;-</span> <span class="fu">nb</span>(<span class="st">'y'</span>, df)</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>model_nb <span class="ot">&lt;-</span> <span class="fu">lp</span>(model_nb, df, <span class="at">smooth =</span> <span class="dv">1</span>)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cv</span>(model_nb, df, <span class="at">k =</span> <span class="dv">10</span>)</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(model_nb, df)</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">confusionMatrix</span>(pred, df<span class="sc">$</span>y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>model_nb <span class="ot">&lt;-</span> <span class="fu">lp</span>(model_nb, df, <span class="at">smooth =</span> <span class="dv">1</span>) <span class="co"># learn parameter</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cv</span>(model_nb, df, <span class="at">k =</span> <span class="dv">10</span>) <span class="co"># cross validation</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>pred_nb <span class="ot">&lt;-</span> <span class="fu">predict</span>(model_nb, df)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">confusionMatrix</span>(pred_nb, df<span class="sc">$</span>y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>Confusion Matrix and Statistics
 
           Reference
-Prediction  live   die
-      live 85674  1477
-      die   6730  1958
+Prediction live  die
+      live 8363  861
+      die   499  468
                                           
-               Accuracy : 0.9144          
-                 95% CI : (0.9126, 0.9161)
-    No Information Rate : 0.9642          
-    P-Value [Acc &gt; NIR] : 1               
+               Accuracy : 0.8665          
+                 95% CI : (0.8598, 0.8731)
+    No Information Rate : 0.8696          
+    P-Value [Acc &gt; NIR] : 0.8231          
                                           
-                  Kappa : 0.2864          
+                  Kappa : 0.3346          
                                           
  Mcnemar's Test P-Value : &lt;2e-16          
                                           
-            Sensitivity : 0.9272          
-            Specificity : 0.5700          
-         Pos Pred Value : 0.9831          
-         Neg Pred Value : 0.2254          
-             Prevalence : 0.9642          
-         Detection Rate : 0.8939          
-   Detection Prevalence : 0.9093          
-      Balanced Accuracy : 0.7486          
+            Sensitivity : 0.9437          
+            Specificity : 0.3521          
+         Pos Pred Value : 0.9067          
+         Neg Pred Value : 0.4840          
+             Prevalence : 0.8696          
+         Detection Rate : 0.8206          
+   Detection Prevalence : 0.9051          
+      Balanced Accuracy : 0.6479          
                                           
        'Positive' Class : live            
                                           </code></pre>
@@ -568,40 +569,41 @@ Prediction  live   die
 </section>
 <section id="bayesnet" class="level2" data-number="3.2">
 <h2 data-number="3.2" class="anchored" data-anchor-id="bayesnet"><span class="header-section-number">3.2</span> BayesNet</h2>
+<p>Different from Naive Bayes, Bayes net</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(seed)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>model_bn <span class="ot">&lt;-</span> <span class="fu">tan_cl</span>(<span class="st">'y'</span>, df, <span class="at">score =</span> <span class="st">'aic'</span>)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>model_bn <span class="ot">&lt;-</span> <span class="fu">lp</span>(model_bn, df, <span class="at">smooth =</span> <span class="dv">1</span>)</span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">cv</span>(model_bn, df, <span class="at">k =</span> <span class="dv">10</span>)</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(model_bn, df)</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="fu">confusionMatrix</span>(pred, df<span class="sc">$</span>y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>pred_bn <span class="ot">&lt;-</span> <span class="fu">predict</span>(model_bn, df)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="fu">confusionMatrix</span>(pred_bn, df<span class="sc">$</span>y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>Confusion Matrix and Statistics
 
           Reference
-Prediction  live   die
-      live 91376  2746
-      die   1028   689
+Prediction live  die
+      live 8604  961
+      die   258  368
                                           
-               Accuracy : 0.9606          
-                 95% CI : (0.9594, 0.9618)
-    No Information Rate : 0.9642          
-    P-Value [Acc &gt; NIR] : 1               
+               Accuracy : 0.8804          
+                 95% CI : (0.8739, 0.8866)
+    No Information Rate : 0.8696          
+    P-Value [Acc &gt; NIR] : 0.0005642       
                                           
-                  Kappa : 0.2495          
+                  Kappa : 0.3197          
                                           
- Mcnemar's Test P-Value : &lt;2e-16          
+ Mcnemar's Test P-Value : &lt; 2.2e-16       
                                           
-            Sensitivity : 0.9889          
-            Specificity : 0.2006          
-         Pos Pred Value : 0.9708          
-         Neg Pred Value : 0.4013          
-             Prevalence : 0.9642          
-         Detection Rate : 0.9534          
-   Detection Prevalence : 0.9821          
-      Balanced Accuracy : 0.5947          
+            Sensitivity : 0.9709          
+            Specificity : 0.2769          
+         Pos Pred Value : 0.8995          
+         Neg Pred Value : 0.5879          
+             Prevalence : 0.8696          
+         Detection Rate : 0.8443          
+   Detection Prevalence : 0.9386          
+      Balanced Accuracy : 0.6239          
                                           
        'Positive' Class : live            
                                           </code></pre>
@@ -615,35 +617,35 @@ Prediction  live   die
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(seed)</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>train_control <span class="ot">&lt;-</span> <span class="fu">trainControl</span>(<span class="at">method =</span> <span class="st">"cv"</span>, <span class="at">number =</span> <span class="dv">10</span>)</span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>model_svm <span class="ot">&lt;-</span> <span class="fu">train</span>(y <span class="sc">~</span> ., <span class="at">data =</span> df, <span class="at">method =</span> <span class="st">"svmRadial"</span>, <span class="at">trControl =</span> train_control)</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(model_svm, df)</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="fu">confusionMatrix</span>(pred, df<span class="sc">$</span>y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>pred_svm <span class="ot">&lt;-</span> <span class="fu">predict</span>(model_svm, df)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="fu">confusionMatrix</span>(pred_svm, df<span class="sc">$</span>y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>Confusion Matrix and Statistics
 
           Reference
-Prediction  live   die
-      live 91376  2746
-      die   1028   689
+Prediction live  die
+      live 8862 1329
+      die     0    0
                                           
-               Accuracy : 0.9606          
-                 95% CI : (0.9594, 0.9618)
-    No Information Rate : 0.9642          
-    P-Value [Acc &gt; NIR] : 1               
+               Accuracy : 0.8696          
+                 95% CI : (0.8629, 0.8761)
+    No Information Rate : 0.8696          
+    P-Value [Acc &gt; NIR] : 0.5073          
                                           
-                  Kappa : 0.2495          
+                  Kappa : 0               
                                           
  Mcnemar's Test P-Value : &lt;2e-16          
                                           
-            Sensitivity : 0.9889          
-            Specificity : 0.2006          
-         Pos Pred Value : 0.9708          
-         Neg Pred Value : 0.4013          
-             Prevalence : 0.9642          
-         Detection Rate : 0.9534          
-   Detection Prevalence : 0.9821          
-      Balanced Accuracy : 0.5947          
+            Sensitivity : 1.0000          
+            Specificity : 0.0000          
+         Pos Pred Value : 0.8696          
+         Neg Pred Value :    NaN          
+             Prevalence : 0.8696          
+         Detection Rate : 0.8696          
+   Detection Prevalence : 1.0000          
+      Balanced Accuracy : 0.5000          
                                           
        'Positive' Class : live            
                                           </code></pre>
@@ -657,8 +659,8 @@ Prediction  live   die
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(df_ageori)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>train_control <span class="ot">&lt;-</span> <span class="fu">trainControl</span>(<span class="at">method =</span> <span class="st">"cv"</span>, <span class="at">number =</span> <span class="dv">10</span>)</span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>model_rf <span class="ot">&lt;-</span> <span class="fu">train</span>(y <span class="sc">~</span> ., <span class="at">data =</span> df, <span class="at">method =</span> <span class="st">"rf"</span>, <span class="at">trControl =</span> train_control)</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(model_rf, df)</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="fu">confusionMatrix</span>(pred, df<span class="sc">$</span>y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>pred_rf <span class="ot">&lt;-</span> <span class="fu">predict</span>(model_rf, df)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="fu">confusionMatrix</span>(pred_rf, df<span class="sc">$</span>y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
@@ -698,8 +700,8 @@ Prediction live  die
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(seed)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>train_control <span class="ot">&lt;-</span> <span class="fu">trainControl</span>(<span class="at">method =</span> <span class="st">"cv"</span>, <span class="at">number =</span> <span class="dv">10</span>)</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>model_tree <span class="ot">&lt;-</span> <span class="fu">train</span>(y <span class="sc">~</span> ., <span class="at">data =</span> df, <span class="at">method =</span> <span class="st">"C5.0"</span>, <span class="at">trControl =</span> train_control)</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(model_tree, df)</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="fu">confusionMatrix</span>(pred, df<span class="sc">$</span>y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>pred_tree <span class="ot">&lt;-</span> <span class="fu">predict</span>(model_tree, df)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="fu">confusionMatrix</span>(pred_tree, df<span class="sc">$</span>y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
@@ -733,14 +735,14 @@ Prediction live  die
 </div>
 </div>
 </section>
-<section id="ibk-knn" class="level2" data-number="3.6">
-<h2 data-number="3.6" class="anchored" data-anchor-id="ibk-knn"><span class="header-section-number">3.6</span> IBK (KNN)</h2>
+<section id="knn" class="level2" data-number="3.6">
+<h2 data-number="3.6" class="anchored" data-anchor-id="knn"><span class="header-section-number">3.6</span> kNN</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(seed)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>train_control <span class="ot">&lt;-</span> <span class="fu">trainControl</span>(<span class="at">method =</span> <span class="st">"cv"</span>, <span class="at">number =</span> <span class="dv">10</span>)</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>model_knn <span class="ot">&lt;-</span> <span class="fu">train</span>(y <span class="sc">~</span> ., <span class="at">data =</span> df, <span class="at">method =</span> <span class="st">"knn"</span>, <span class="at">trControl =</span> train_control)</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(model_knn, df)</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="fu">confusionMatrix</span>(pred, df<span class="sc">$</span>y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>pred_knn <span class="ot">&lt;-</span> <span class="fu">predict</span>(model_knn, df)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="fu">confusionMatrix</span>(pred_knn, df<span class="sc">$</span>y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
@@ -777,6 +779,87 @@ Prediction live  die
 </section>
 <section id="summary" class="level1" data-number="4">
 <h1 data-number="4"><span class="header-section-number">4</span> Summary</h1>
+<p>In this part, we summarize all the results above to reproduce the main result table in the original paper</p>
+<p>accuracy precision F-measure recall</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>get_all_scores <span class="ot">&lt;-</span> <span class="cf">function</span>(pred, <span class="at">y =</span> df<span class="sc">$</span>y){</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  acc <span class="ot">&lt;-</span> <span class="fu">accuracy</span>(pred, y)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  prec <span class="ot">&lt;-</span> <span class="fu">precision</span>(pred, y)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  rec <span class="ot">&lt;-</span> <span class="fu">recall</span>(pred, y)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  F1 <span class="ot">&lt;-</span> <span class="dv">2</span><span class="sc">*</span>(prec<span class="sc">*</span>rec)<span class="sc">/</span>(prec<span class="sc">+</span>rec)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">c</span>(acc, prec, F1, rec))</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>pred_list <span class="ot">&lt;-</span> <span class="fu">list</span>(pred_nb, pred_bn, pred_svm, </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>                  pred_rf, pred_tree, pred_knn)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>summary_table <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, <span class="fu">lapply</span>(pred_list, get_all_scores))</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>summary_table <span class="ot">&lt;-</span> <span class="fu">round</span>(summary_table, <span class="dv">3</span>)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(summary_table) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Accuracy"</span>, <span class="st">"Precision"</span>, <span class="st">"F1"</span>, <span class="st">"Recall"</span>)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>summary_table <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="fu">data.frame</span>(<span class="at">Model =</span> <span class="fu">c</span>(<span class="st">"NaiveBayes"</span>, <span class="st">"BayesNet"</span>, <span class="st">"SVM"</span>, <span class="st">"RandomForest"</span>, <span class="st">"DecisionTree"</span>, <span class="st">"kNN"</span>)), summary_table)</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(summary_table, <span class="at">format =</span> <span class="st">"html"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Model</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Accuracy</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Precision</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">F1</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Recall</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">NaiveBayes</td>
+<td style="text-align: right;">0.867</td>
+<td style="text-align: right;">0.907</td>
+<td style="text-align: right;">0.925</td>
+<td style="text-align: right;">0.944</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BayesNet</td>
+<td style="text-align: right;">0.880</td>
+<td style="text-align: right;">0.900</td>
+<td style="text-align: right;">0.934</td>
+<td style="text-align: right;">0.971</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SVM</td>
+<td style="text-align: right;">0.870</td>
+<td style="text-align: right;">0.870</td>
+<td style="text-align: right;">0.930</td>
+<td style="text-align: right;">1.000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">RandomForest</td>
+<td style="text-align: right;">0.872</td>
+<td style="text-align: right;">0.872</td>
+<td style="text-align: right;">0.932</td>
+<td style="text-align: right;">1.000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DecisionTree</td>
+<td style="text-align: right;">0.870</td>
+<td style="text-align: right;">0.870</td>
+<td style="text-align: right;">0.930</td>
+<td style="text-align: right;">1.000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">kNN</td>
+<td style="text-align: right;">0.876</td>
+<td style="text-align: right;">0.880</td>
+<td style="text-align: right;">0.933</td>
+<td style="text-align: right;">0.993</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+</div>
 </section>
 
 </main>
