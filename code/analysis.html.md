@@ -251,7 +251,7 @@ kable(head(df), format = "html")
 
 ## Cleaning
 
-Aiming to solve the binary classification problem, binary `y` should be elicited first. As for features, not all of them are available. For example, `pneumonia = 99` indicate the feature `pneumonia` is not available for this sample. In this case, we should label `99` as `NA` to avoid future mistakes.
+Aiming to solve the binary classification problem, binary `y` should be elicited first. As for features, not all of them are available. For example, `pneumonia = 99` indicate the feature `pneumonia` is not available for this sample. In this case, we should label `99` as `NA` to avoid future mistakes. Some machine learning methods cannot handle cases with NA value, we actually use sample without NA values. however, NA for feature `pregnant` is not really not available. All males are labelled `NA`, but it does not make sense to eliminate all males. In this case, `NA` for feature `pregnant` should be changed to `2` which indicate not pregnant. Besides, `age` is the only continuous variable in this dataset. NaiveBayes and BayesNet could only handle factor features, while others work with numeric features. We prepare two version of data frames, one with factor age column and the other with numeric age column.
 
 
 ::: {.cell}
@@ -455,6 +455,8 @@ In this part, we managed to reproduce the result in the papar [Classification of
 
 -   KNN
 
+For each model, we calculate the confusion matrix to get accuracy, precision, recall and F1 score as summarized in the original paper. 10-fold cross validation is applied for each model. Related model file are save to the file `model/*`.
+
 ## NaiveBayes
 
 NaiveBayes assumes all variables are independent from each other. By experience, it works relatively well even if the assumptions are not met.
@@ -517,7 +519,7 @@ Prediction live  die
 
 ## BayesNet
 
-Different from Naive Bayes, Bayes net
+Different from Naive Bayes, Bayes net define a complicated network structure which indicate relationships among a set of features. The assumption makes sense but is more time-consuming than NaiveBayes Model.
 
 
 ::: {.cell}
@@ -574,6 +576,8 @@ Prediction live  die
 :::
 
 ## SVM
+
+Support Vector Machine (SVM) aim to find the hyperplane with the largest margin to classify data points. Kernel trick is applied here to improve accuracy. We use  radial basis kernel. 
 
 
 ::: {.cell}
@@ -632,6 +636,8 @@ Prediction live  die
 
 ## Random Forest
 
+Random Forest (RF) is consisted of a set of decision trees. Each tree is a weak classifier trained with only a subset of data and features. RF is actually a ensemble learning method.
+
 
 ::: {.cell}
 
@@ -689,6 +695,8 @@ Prediction live  die
 
 ## Decision Tree (C4.5)
 
+Different decision tree algorithms have different feature selection methods, ID3 uses information gain, CART uses gini coefficient and C4.5 uses information gain rate. C5.0, which we use here, is a modified version of C4.5 to be more efficient and accurate.
+
 
 ::: {.cell}
 
@@ -745,7 +753,7 @@ Prediction live  die
 
 ## kNN
 
-
+kNN method find k neighbors near the datapoints first. Class of new points is determined by classes of its neighbors. kNN is non-linear.
 
 
 ::: {.cell}

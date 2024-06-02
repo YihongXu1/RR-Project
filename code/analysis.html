@@ -331,7 +331,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="cleaning" class="level2" data-number="2.2">
 <h2 data-number="2.2" class="anchored" data-anchor-id="cleaning"><span class="header-section-number">2.2</span> Cleaning</h2>
-<p>Aiming to solve the binary classification problem, binary <code>y</code> should be elicited first. As for features, not all of them are available. For example, <code>pneumonia = 99</code> indicate the feature <code>pneumonia</code> is not available for this sample. In this case, we should label <code>99</code> as <code>NA</code> to avoid future mistakes.</p>
+<p>Aiming to solve the binary classification problem, binary <code>y</code> should be elicited first. As for features, not all of them are available. For example, <code>pneumonia = 99</code> indicate the feature <code>pneumonia</code> is not available for this sample. In this case, we should label <code>99</code> as <code>NA</code> to avoid future mistakes. Some machine learning methods cannot handle cases with NA value, we actually use sample without NA values. however, NA for feature <code>pregnant</code> is not really not available. All males are labelled <code>NA</code>, but it does not make sense to eliminate all males. In this case, <code>NA</code> for feature <code>pregnant</code> should be changed to <code>2</code> which indicate not pregnant. Besides, <code>age</code> is the only continuous variable in this dataset. NaiveBayes and BayesNet could only handle factor features, while others work with numeric features. We prepare two version of data frames, one with factor age column and the other with numeric age column.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df_ageori <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">y =</span> <span class="fu">factor</span>(<span class="fu">ifelse</span>(death_date <span class="sc">==</span> <span class="st">"9999-99-99"</span>, <span class="dv">0</span>, <span class="dv">1</span>),</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"live"</span>, <span class="st">"die"</span>)),</span>
@@ -523,6 +523,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><p>Decision Tree</p></li>
 <li><p>KNN</p></li>
 </ul>
+<p>For each model, we calculate the confusion matrix to get accuracy, precision, recall and F1 score as summarized in the original paper. 10-fold cross validation is applied for each model. Related model file are save to the file <code>model/*</code>.</p>
 <section id="naivebayes" class="level2" data-number="3.1">
 <h2 data-number="3.1" class="anchored" data-anchor-id="naivebayes"><span class="header-section-number">3.1</span> NaiveBayes</h2>
 <p>NaiveBayes assumes all variables are independent from each other. By experience, it works relatively well even if the assumptions are not met.</p>
@@ -569,7 +570,7 @@ Prediction live  die
 </section>
 <section id="bayesnet" class="level2" data-number="3.2">
 <h2 data-number="3.2" class="anchored" data-anchor-id="bayesnet"><span class="header-section-number">3.2</span> BayesNet</h2>
-<p>Different from Naive Bayes, Bayes net</p>
+<p>Different from Naive Bayes, Bayes net define a complicated network structure which indicate relationships among a set of features. The assumption makes sense but is more time-consuming than NaiveBayes Model.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(seed)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>model_bn <span class="ot">&lt;-</span> <span class="fu">tan_cl</span>(<span class="st">'y'</span>, df, <span class="at">score =</span> <span class="st">'aic'</span>)</span>
@@ -612,6 +613,7 @@ Prediction live  die
 </section>
 <section id="svm" class="level2" data-number="3.3">
 <h2 data-number="3.3" class="anchored" data-anchor-id="svm"><span class="header-section-number">3.3</span> SVM</h2>
+<p>Support Vector Machine (SVM) aim to find the hyperplane with the largest margin to classify data points. Kernel trick is applied here to improve accuracy. We use radial basis kernel.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(df_ageori)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(seed)</span>
@@ -654,6 +656,7 @@ Prediction live  die
 </section>
 <section id="random-forest" class="level2" data-number="3.4">
 <h2 data-number="3.4" class="anchored" data-anchor-id="random-forest"><span class="header-section-number">3.4</span> Random Forest</h2>
+<p>Random Forest (RF) is consisted of a set of decision trees. Each tree is a weak classifier trained with only a subset of data and features. RF is actually a ensemble learning method.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(seed)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(df_ageori)</span>
@@ -696,6 +699,7 @@ Prediction live  die
 </section>
 <section id="decision-tree-c4.5" class="level2" data-number="3.5">
 <h2 data-number="3.5" class="anchored" data-anchor-id="decision-tree-c4.5"><span class="header-section-number">3.5</span> Decision Tree (C4.5)</h2>
+<p>Different decision tree algorithms have different feature selection methods, ID3 uses information gain, CART uses gini coefficient and C4.5 uses information gain rate. C5.0, which we use here, is a modified version of C4.5 to be more efficient and accurate.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(seed)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>train_control <span class="ot">&lt;-</span> <span class="fu">trainControl</span>(<span class="at">method =</span> <span class="st">"cv"</span>, <span class="at">number =</span> <span class="dv">10</span>)</span>
@@ -737,6 +741,7 @@ Prediction live  die
 </section>
 <section id="knn" class="level2" data-number="3.6">
 <h2 data-number="3.6" class="anchored" data-anchor-id="knn"><span class="header-section-number">3.6</span> kNN</h2>
+<p>kNN method find k neighbors near the datapoints first. Class of new points is determined by classes of its neighbors. kNN is non-linear.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(seed)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>train_control <span class="ot">&lt;-</span> <span class="fu">trainControl</span>(<span class="at">method =</span> <span class="st">"cv"</span>, <span class="at">number =</span> <span class="dv">10</span>)</span>
